@@ -42,8 +42,7 @@ terraform apply
 ```
 
 **3. Get the site URL:**
-The ALB's DNS name is shown in the apply output, or in the AWS console under
-EC2 → Load Balancers → your ALB → DNS name.
+Find the ALB's DNS name in the AWS console: EC2 → Load Balancers → select the ALB → copy the "DNS name" field.
 
 ## Teardown
 
