@@ -1,0 +1,9 @@
+{
+  "name": "terraform-docker-demo-app",
+  "version": "1.0.0",
+  "description": "Simple Node.js app to be containerized and deployed on EC2 behind an ALB",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
