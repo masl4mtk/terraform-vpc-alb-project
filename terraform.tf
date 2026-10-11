@@ -9,11 +9,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "masl4mtk-terraform-project-state-file"
-    key            = "statefile"
-    region         = "us-east-1"
-    encrypt        = true
-    use_lockfile   = true
+    bucket       = "masl4mtk-terraform-project-state-file"
+    key          = "statefile"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }
 
