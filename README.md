@@ -5,18 +5,18 @@ Application Load Balancer.
 
 ## Architecture
 
-- Custom VPC, including 2 subnets, one in each availability zone (us-east-1a and us-east 1b)
+- Custom VPC, including 2 subnets, one in each availability zone (us-east-1a and us-east-1b)
 - Internet Gateway + route table (connecting the different services and allowing traffic to internet)
 - EC2 instance (Amazon Linux 2023) fetched through a data block
 - Docker app running in the EC2 instance, which is fetched from the GitHub repo [docker-demo-app](https://github.com/masl4mtk/docker-demo-app)
-- Data script in the EC2 instance automating pulling the app from the GitHub repo. Data scitpt also automates the download of docker and git and running the docker app.
+- Data script in the EC2 instance automating pulling the app from the GitHub repo. The Data scipt also automates the download of docker and git and running the docker app.
 - Application hits the load balancer, then to the EC2 instance in the subnet, through a target group.
 - Security groups: ALB accepts HTTP (80) from the internet; EC2 only accepts traffic from the ALB's security group.
 
 ## Structure 
 
 ```
-├── Application
+├── application
 │   ├── Dockerfile
 │   └── app
 │       ├── package.json
@@ -25,10 +25,8 @@ Application Load Balancer.
 │       │   ├── script.js
 │       │   └── style.css
 │       └── server.js
-├── Bootstrap
+├── bootstrap
 │   ├── main.tf
-│   ├── terraform.tfstate
-│   └── terraform.tfstate.backup
 ├── README.md
 ├── main.tf
 ├── modules
