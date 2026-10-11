@@ -10,12 +10,12 @@ data "aws_ami" "amazon_linux" {
 
 
 resource "aws_instance" "terraform-project-instance" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  subnet_id     = var.subnet_ids[0]
-    vpc_security_group_ids = [var.security_group]
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t2.micro"
+  subnet_id              = var.subnet_ids[0]
+  vpc_security_group_ids = [var.security_group]
 
-user_data = <<-EOF
+  user_data = <<-EOF
                 #!/bin/bash
                 yum update -y
                 yum install -y docker git
