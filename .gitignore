@@ -1,4 +1,3 @@
-Application/
 .DS_Store
 .terraform/
 *.tfstate
