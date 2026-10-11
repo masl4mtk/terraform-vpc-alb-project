@@ -14,13 +14,35 @@ Application Load Balancer.
 
 ## Structure 
 
-├── bootstrap/ # Creates the S3 bucket for remote state (run once, separately)
-├── modules/
-│ ├── networking/ # VPC, subnets, IGW, route table, security groups
-│ ├── compute/ # EC2 instance (AMI resolved via data source), user data bootstrap
-│ └── load-balancer/ # ALB, target group, listener
-├── main.tf # Root module — wires the three modules together
-└── terraform.tf # Provider + S3 backend config
+```
+├── Application
+│   ├── Dockerfile
+│   └── app
+│       ├── package.json
+│       ├── public
+│       │   ├── index.html
+│       │   ├── script.js
+│       │   └── style.css
+│       └── server.js
+├── Bootstrap
+│   ├── main.tf
+│   ├── terraform.tfstate
+│   └── terraform.tfstate.backup
+├── README.md
+├── main.tf
+├── modules
+│   ├── compute
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── load-balancer
+│   │   ├── main.tf
+│   │   └── variables.tf
+│   └── networking
+│       ├── main.tf
+│       └── outputs.tf
+└── terraform.tf
+```
 
 ## Usage
 
