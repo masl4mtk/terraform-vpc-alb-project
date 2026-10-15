@@ -1,0 +1,32 @@
+name: Build infrastructure
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/*
+  workflow_dispatch:
+
+jobs:
+  check_format:
+
+    name: Check Terraform files are formatted correctly  
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.0
+          
+      - name: terraform fmt
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.0
+
+      
