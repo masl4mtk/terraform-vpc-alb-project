@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -25,5 +25,30 @@ jobs:
 
       - name: terraform fmt
         run: terraform fmt -check -recursive
+        id: terraform-fmt
+      
+      - name: Wrong formatting found
+        if: ${{ failure() && steps.terraform-fmt.outputs.failure_reason == 'check-failed' }}
+        run: echo "Formatting Check Failed."
 
       
+  Initialisation and Validation:
+
+    depends-on: check_format
+    name: Initialise and validate Terraform files
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: terraform init
+        run: terraform init
+
+      - name: terraform validate
+        run: terraform validate
+
