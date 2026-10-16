@@ -47,11 +47,11 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::386346184027:role/github-actions-terraform
+          role-to-assume: ${{ vars.AWS_ROLE_ARN}}
           aws-region: us-east-1
 
       - name: Setup Terraform
@@ -62,5 +62,3 @@ jobs:
 
       - name: terraform validate
         run: terraform validate
-
-
