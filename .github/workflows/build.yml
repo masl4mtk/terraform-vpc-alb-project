@@ -62,3 +62,17 @@ jobs:
 
       - name: terraform validate
         run: terraform validate
+
+  linting:
+
+    needs: initialise_and_validate
+    name: Linting Terraform files
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check linting of Terraform files
+        uses: devops-infra/action-tflint@v1.0.5
