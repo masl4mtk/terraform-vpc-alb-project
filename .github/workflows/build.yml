@@ -76,3 +76,21 @@ jobs:
 
       - name: Check linting of Terraform files
         uses: devops-infra/action-tflint@v1.0.5
+
+
+  security_scanning:
+
+    needs: linting
+    name: Security scanning Terraform files
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Security Scan
+        uses: triat/terraform-security-scan@v3.0.0
