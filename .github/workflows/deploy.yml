@@ -1,1 +1,45 @@
-Name: Deploying infrastructure
+name: Deploying infrastructure
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+jobs:
+    formatting_validation_linting_security_checks:
+        name: Formatting, Validation, Linting and Security Checks
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+
+            - name: terraform fmt
+              run: terraform fmt -check -recursive
+              id: terraform-fmt
+
+            - name: Wrong formatting found
+              if: ${{ failure() && steps.terraform-fmt.outputs.failure_reason == 'check-failed' }}
+              run: echo "Formatting Check Failed."
+            
+            - name: AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
+                aws-region: us-east-1  
+
+            - name: terraform init
+              run: terraform init
+
+            - name: terraform validate
+              run: terraform validate
+
+            - name: Linting
+              uses: devops-infra/action-tflint@v1.0.5
+
+            - name: Security scanning
+              uses: aquasecurity/tfsec-action@v1.0.0
+              with:
+                additional_args: --soft-fail
