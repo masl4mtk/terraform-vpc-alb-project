@@ -48,3 +48,26 @@ jobs:
               uses: aquasecurity/tfsec-action@v1.0.0
               with:
                 additional_args: --soft-fail
+    
+    terraform_plan:
+        needs: formatting_validation_linting_security_checks
+        name: Terraform Plan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+
+            - name: AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
+                aws-region: us-east-1  
+            
+            - name: terraform init
+              run: terraform init
+              
+            - name: terraform plan
+              run: terraform plan
