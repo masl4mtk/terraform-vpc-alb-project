@@ -71,3 +71,13 @@ jobs:
 
             - name: terraform plan
               run: terraform plan
+
+    manual_approval:
+        needs: terraform_plan
+        name: Manual Approval
+        runs-on: ubuntu-latest
+        steps:
+            - name: Wait for manual approval
+              uses: hmarr/auto-approve-action@v2.0.0
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
