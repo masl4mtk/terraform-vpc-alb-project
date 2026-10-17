@@ -7,7 +7,7 @@ on:
       - main
   push:
     branches:
-      - feature/*
+      - feature/**
   workflow_dispatch:
 
 permissions:

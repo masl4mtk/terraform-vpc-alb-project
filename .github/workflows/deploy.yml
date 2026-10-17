@@ -70,14 +70,39 @@ jobs:
               run: terraform init
 
             - name: terraform plan
-              run: terraform plan
+              run: terraform plan -out=tfplan
 
-    manual_approval:
+            - name: Upload Terraform Plan
+              uses: actions/upload-artifact@v4
+              with:
+                name: terraform_plan
+                path: tfplan
+
+    terraform_apply:
         needs: terraform_plan
-        name: Manual Approval
+        name: Terraform Apply
+        environment: Deployment
         runs-on: ubuntu-latest
         steps:
-            - name: Wait for manual approval
-              uses: hmarr/auto-approve-action@v2.0.0
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+
+            - name: AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
               with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
+                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
+                aws-region: us-east-1  
+            
+            - name: terraform init
+              run: terraform init
+            
+            - name: Download Terraform Plan
+              uses: actions/download-artifact@v4
+              with:
+                name: terraform_plan
+
+            - name: terraform apply
+              run: terraform apply tfplan
