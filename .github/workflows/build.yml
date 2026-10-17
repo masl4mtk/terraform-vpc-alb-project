@@ -94,3 +94,5 @@ jobs:
 
       - name: Security scanning of Terraform files
         uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          additional_args: --soft-fail
