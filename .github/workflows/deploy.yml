@@ -81,7 +81,7 @@ jobs:
     terraform_apply:
         needs: terraform_plan
         name: Terraform Apply
-        environment: Deployment
+        environment: production
         runs-on: ubuntu-latest
         steps:
             - name: Checkout

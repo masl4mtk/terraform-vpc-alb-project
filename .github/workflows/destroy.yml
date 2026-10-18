@@ -1,1 +1,74 @@
 name: Destroying infrastructure
+
+on:
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    Confirmation:
+        name: Confirmation
+        runs-on: ubuntu-latest
+        steps:
+            - name: Confirmation
+              run: |
+                echo "Are you sure you want to destroy the infrastructure? This action is irreversible."
+                read -p "Type 'yes' to confirm: " confirmation
+                if [ "$confirmation" != "yes" ]; then
+                  echo "Destruction cancelled."
+                  exit 1
+                fi
+                if [ "$confirmation" == "yes" ]; then
+                  echo "Destruction confirmed. Proceeding with the destruction of infrastructure."
+                  exit 0
+                fi
+
+    destroy_plan:
+        needs: Confirmation
+        name: Terraform Destroy Plan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+
+            - name: AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
+                aws-region: us-east-1  
+
+            - name: terraform init
+              run: terraform init
+
+            - name: terraform plan for destroy
+              run: terraform plan -destroy -out=tfplan
+
+    terraform_destroy:
+        needs: destroy_plan
+        environment:
+            name: production
+        name: Terraform Destroy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+
+            - name: AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
+                aws-region: us-east-1  
+
+            - name: terraform init
+              run: terraform init
+
+            - name: terraform apply destroy plan
+              run: terraform apply -auto-approve tfplan
