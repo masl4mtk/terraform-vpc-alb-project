@@ -50,8 +50,7 @@ jobs:
 
     terraform_destroy:
         needs: destroy_plan
-        environment:
-            name: production
+        environment: production
         name: Terraform Destroy
         runs-on: ubuntu-latest
         steps:
