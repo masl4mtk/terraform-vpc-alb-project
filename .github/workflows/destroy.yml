@@ -1,73 +1,98 @@
-name: Destroying infrastructure
+name: Destroy infrastructure
 
 on:
-    workflow_dispatch:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: "Type yes to confirm destruction of all Terraform-managed infrastructure"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
 
 permissions:
-    id-token: write
-    contents: read
+  contents: read
+  id-token: write
 
 jobs:
-    Confirmation:
-        name: Confirmation
-        runs-on: ubuntu-latest
-        steps:
-            - name: Confirmation
-              run: |
-                echo "Are you sure you want to destroy the infrastructure? This action is irreversible."
-                read -p "Type 'yes' to confirm: " confirmation
-                if [ "$confirmation" != "yes" ]; then
-                  echo "Destruction cancelled."
-                  exit 1
-                fi
-                if [ "$confirmation" == "yes" ]; then
-                  echo "Destruction confirmed. Proceeding with the destruction of infrastructure."
-                  exit 0
-                fi
+  confirmation_check:
+    name: Confirmation check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm destruction
+        env:
+          CONFIRM_DESTROY: ${{ inputs.confirm_destroy }}
+        run: |
+          if [ "$CONFIRM_DESTROY" != "yes" ]; then
+            echo "Destruction cancelled. Select 'yes' to continue."
+            exit 1
+          fi
 
-    destroy_plan:
-        needs: Confirmation
-        name: Terraform Destroy Plan
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+  destroy_plan:
+    name: Destroy plan
+    needs: confirmation_check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-            - name: AWS credentials
-              uses: aws-actions/configure-aws-credentials@v3
-              with:
-                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
-                aws-region: us-east-1  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
 
-            - name: terraform init
-              run: terraform init
+      - name: Terraform init
+        run: terraform init
 
-            - name: terraform plan for destroy
-              run: terraform plan -destroy -out=tfplan
+      - name: Create destroy plan
+        run: terraform plan -destroy -out=tfplan
 
-    terraform_destroy:
-        needs: destroy_plan
-        environment: production
-        name: Terraform Destroy
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+      - name: Upload destroy plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-destroy-plan
+          path: tfplan
+          retention-days: 1
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
+  manual_approval:
+    name: Manual approval
+    needs: destroy_plan
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Approval granted
+        run: echo "Production environment approval granted."
 
-            - name: AWS credentials
-              uses: aws-actions/configure-aws-credentials@v3
-              with:
-                role-to-assume: ${{ vars.AWS_ROLE_ARN}}
-                aws-region: us-east-1  
+  terraform_destroy:
+    name: Terraform destroy
+    needs: manual_approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: terraform init
-              run: terraform init
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-            - name: terraform apply destroy plan
-              run: terraform apply -auto-approve tfplan
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Download destroy plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-destroy-plan
+
+      - name: Apply destroy plan
+        run: terraform apply -auto-approve tfplan
